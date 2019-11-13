@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.MessageDigest;
@@ -35,13 +36,25 @@ import javax.crypto.SecretKey;
 import javax.xml.bind.DatatypeConverter;
 
 /**
- * Cliente para el Caso 2 de la clase INFRACOMP
+ * Cliente para el Caso 3 de la clase INFRACOMP
  * @author luisgomez
  *
  */
 public class Cliente {
 
 	public final static String PADDING = "AES/ECB/PKCS5Padding";
+
+	public Cliente (boolean tipoCliente, int puerto, String cedula, String clave, String algS, String algA, String algH) {
+		try {
+			if (tipoCliente)
+				correSeguro(puerto, cedula, clave, algS, algA, algH);
+			else
+				correInseguro(puerto, cedula, clave, algS, algA, algH);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	public static void imprimirMenuPpal()
 	{
@@ -166,23 +179,16 @@ public class Cliente {
 
 	}
 
-	public static void main(String args[]) throws Exception {
+	public void correSeguro(int p, String cc, String c, String s, String a, String h) throws Exception
+	{
+		int puerto = p;
 
-		System.out.println("CASO 2 - INFRACOMP / LUIS MIGUEL GOMEZ LONDONO 201729597");		
+		String cedula = cc;
+		String clave = c;
 
-		Scanner sc = new Scanner(System.in);
-		System.out.println("Ingrese el puerto al que desea conectarse: ");
-		int puerto = Integer.parseInt(sc.nextLine());
-
-		String cedula = dato(sc, "cedula");
-		System.out.println("Cedula: " + cedula);
-		String clave = dato(sc, "clave");
-		System.out.println("Clave: " + clave);
-
-		String algS = algSimetrico(sc);
-		String algA = "RSA";
-		String algH = algHMAC(sc);
-
+		String algS = s;
+		String algA = a;
+		String algH = h;
 
 		System.out.println("Conectandose con el servidor en el puerto: " + puerto);
 
@@ -290,6 +296,138 @@ public class Cliente {
 		}
 		out.println(resHMAC);
 		System.out.println("EXITO!");
+	}
+	
+	public void correInseguro(int p, String cc, String c, String s, String a, String h) throws Exception {
+		int puerto = p;
+
+		String cedula = cc;
+		String clave = c;
+
+		String algS = s;
+		String algA = a;
+		String algH = h;
+		
+		System.out.println("Conectandose con el servidor en el puerto: " + puerto);
+
+		Socket socket = new Socket("localhost", puerto);
+		BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+
+		//Primera parte del protocolo
+		out.println("HOLA");
+		System.out.println();
+		System.out.println("SERVIDOR: " + br.readLine());
+
+		//Mando los algoritmos
+		System.out.println("Enviando algoritmos: " + algS + ":" + algA + ":" + algH);
+		out.println("ALGORITMOS:"+algS + ":" + algA + ":" + algH);
+
+		//Espero OK|ERROR y el CD
+		br.readLine();
+		String resp2 = br.readLine();
+		System.out.println("SERVIDOR: " + resp2);
+		System.out.println();
+
+		//Recibo el CD
+		byte[] certificado = DatatypeConverter.parseBase64Binary(resp2);
+		//Sacamos el certificado
+		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+		InputStream in = new ByteArrayInputStream(certificado);
+		X509Certificate cert = (X509Certificate) certFactory.generateCertificate(in);
+
+		//Creamos simetrica
+		KeyGenerator keygen = KeyGenerator.getInstance(algS);
+		SecretKey simetrica = keygen.generateKey();
+		//Mando la simetrica
+		out.println(DatatypeConverter.printBase64Binary(simetrica.getEncoded()));
+
+		//Mando un reto
+		String elReto = "LuisMiguelGomezL";
+		out.println(elReto);
+
+		//Recibo el mismo reto
+		String resp3 = br.readLine();
+		System.out.println(resp3);
+		System.out.println("SERVIDOR: " + resp2);
+		System.out.println();
+		String resReto = "OK";
+		if (!elReto.equals(resp3))
+		{
+			resReto = "ERROR";
+			out.println(resReto);
+			System.out.println("No coincidieron los retos...");
+			System.out.println();
+			socket.close();
+			return;
+		}
+		out.println(resReto);
+		//Mandamos cc
+		byte[] ccC = cedula.getBytes();
+
+		out.println(DatatypeConverter.printBase64Binary(ccC));
+
+		//mandamosclave
+		byte[] claveC = clave.getBytes();
+
+		out.println(DatatypeConverter.printBase64Binary(claveC));
+
+		//Recibimos valor normal
+		String resp4 = br.readLine();
+		//covertido a bytes
+		byte[] cP = DatatypeConverter.parseBase64Binary(resp4);
+
+		//Recibimos valor en hash
+		String resp5 = br.readLine();
+		//Simpelemente lo pasamos a bytes
+		byte[] hash = DatatypeConverter.parseBase64Binary(resp5);
+		String hashS = DatatypeConverter.printBase64Binary(hash);
+
+		//Aca deberia hacerle hash a cP 
+		String hashCalculado = DatatypeConverter.printBase64Binary(cP);
+		
+		// aca compararlo con hash
+		String resHMAC = "OK";
+		if (!hashCalculado.equals(hashS))
+		{
+			resHMAC = "ERROR";
+			out.println(resHMAC);
+			System.out.println("No coincidieron los HASH...");
+			System.out.println();
+			socket.close();
+			return;
+		}
+		out.println(resHMAC);
+		System.out.println("EXITO!");
+	}
+
+	//ya se usa solo para lo manual
+	public static void main(String args[]) throws Exception {
+
+
+		System.out.println("CLIENTE INDEPENDIENTE CASO 3 - INFRACOMP / LUIS MIGUEL GOMEZ LONDONO 201729597");		
+
+		Scanner sc = new Scanner(System.in);
+		
+		System.out.println("¿Desea usar un cliente seguro? (Debe ser el mismo del servidor que inicializo): ");
+		System.out.println("1. SI ");
+		System.out.println("2. NO ");
+		int sec = Integer.parseInt(sc.nextLine());
+		boolean seguro = (sec == 1) ? true : false;
+		
+		System.out.println("Ingrese el puerto al que desea conectarse: ");
+		int puerto = Integer.parseInt(sc.nextLine());
+
+		String cedula = dato(sc, "cedula");
+		System.out.println("Cedula: " + cedula);
+		String clave = dato(sc, "clave");
+		System.out.println("Clave: " + clave);
+
+		String algS = algSimetrico(sc);
+		String algA = "RSA";
+		String algH = algHMAC(sc);
+
+		Cliente cliente = new Cliente(seguro, puerto, cedula, clave, algS, algA, algH);		
 	}
 
 }

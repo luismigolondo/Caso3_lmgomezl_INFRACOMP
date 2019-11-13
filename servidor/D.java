@@ -202,9 +202,11 @@ public class D implements Runnable {
 				if (linea.equals(OK)) {
 					cadenas[7] = dlg + "Terminando exitosamente." + linea;
 					System.out.println(cadenas[7]);
+					System.out.println();
 				} else {
 					cadenas[7] = dlg + "Terminando con error" + linea;
 			        System.out.println(cadenas[7]);
+					System.out.println();
 				}
 		        sc.close();
 

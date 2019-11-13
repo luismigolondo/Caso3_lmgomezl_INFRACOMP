@@ -183,15 +183,14 @@ public class DInseguro implements Runnable {
 				int valor = rand.nextInt(1000000);
 				String strvalor = valor+"";
 				while (strvalor.length()%4!=0) strvalor += 0;
-				byte[] valorByte = toByteArray(strvalor);
-				ac.println(toHexString(valorByte));
+				ac.println(strvalor);
 				cadenas[6] = dlg + "envio valor "+strvalor+" al cliente. continuado.";
 				System.out.println(cadenas[6]);
 		        
-				byte [] hmac = S.hdg(valorByte, simetrica, algoritmos[3]);
-				byte[] recibo = S.ae(hmac, keyPairServidor.getPrivate(), algoritmos[2]);
-				ac.println(toHexString(recibo));
-				System.out.println(dlg + "envio hmac cifrado con llave privada del servidor. continuado.");
+				//hash nuevo sencillo del valor
+				byte [] hash = toByteArray(strvalor);
+				ac.println(toHexString(hash));
+				System.out.println(dlg + "envio hash. continuado.");
 				
 				cadenas[7] = "";
 				linea = dc.readLine();	

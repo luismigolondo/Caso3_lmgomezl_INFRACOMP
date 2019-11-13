@@ -25,9 +25,16 @@ public class P {
 	public static void main(String[] args) throws Exception{
 		// TODO Auto-generated method stub
 
-		System.out.println(MAESTRO + "Establezca puerto de conexion:");
 		InputStreamReader isr = new InputStreamReader(System.in);
 		BufferedReader br = new BufferedReader(isr);
+		
+		System.out.println(MAESTRO + "Establezca servidor seguro:");
+		System.out.println("1. SEGURO ");
+		System.out.println("2. INSEGURO ");
+		int sec = Integer.parseInt(br.readLine());
+		boolean seguro = (sec == 1) ? true : false;
+		
+		System.out.println(MAESTRO + "Establezca puerto de conexion:");
 		int ip = Integer.parseInt(br.readLine());
 		System.out.println(MAESTRO + "Empezando servidor maestro en puerto " + ip);
 		// Adiciona la libreria como un proveedor de seguridad.
@@ -53,13 +60,13 @@ public class P {
 		System.out.println(MAESTRO + "Socket creado.");
 		
 		//Creamos el pool de threads
-		ExecutorService executor = Executors.newFixedThreadPool(5);
+		ExecutorService executor = Executors.newFixedThreadPool(2);
         
 		for (int i=0;true;i++) {
 			try { 
 				Socket sc = ss.accept();
 				System.out.println(MAESTRO + "Cliente " + i + " aceptado.");
-				Runnable d = new D(sc,i);
+				Runnable d = seguro ? new D(sc,i) : new DInseguro(sc, i);
 				executor.execute(d);
 			} catch (IOException e) {
 				System.out.println(MAESTRO + "Error creando el socket cliente.");

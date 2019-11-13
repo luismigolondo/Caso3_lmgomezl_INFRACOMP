@@ -4,5 +4,21 @@ delegado 0: envio certificado del servidor. continuando.
 delegado 0: recibio y creo llave simetrica. continuando.
 delegado 0: recibio confirmacion del cliente:OK-continuado.
 delegado 0: recibio cc y clave - continuando
-delegado 0: envio valor 89029300 cifrado con llave simetrica al cliente. continuado.
+delegado 0: envio valor 42715100 cifrado con llave simetrica al cliente. continuado.
 delegado 0: Terminando exitosamente.OK
+delegado 1: recibio-HOLA-continuando.
+delegado 1: recibio-ALGORITMOS:AES:RSA:HMACSHA256-continuando.
+delegado 1: envio certificado del servidor. continuando.
+delegado 1: recibio y creo llave simetrica. continuando.
+delegado 1: recibio confirmacion del cliente:OK-continuado.
+delegado 1: recibio cc y clave - continuando
+delegado 1: envio valor 11136300 cifrado con llave simetrica al cliente. continuado.
+delegado 1: Terminando exitosamente.OK
+delegado 2: recibio-HOLA-continuando.
+delegado 2: recibio-ALGORITMOS:AES:RSA:HMACSHA256-continuando.
+delegado 2: envio certificado del servidor. continuando.
+delegado 2: recibio y creo llave simetrica. continuando.
+delegado 2: recibio confirmacion del cliente:OK-continuado.
+delegado 2: recibio cc y clave - continuando
+delegado 2: envio valor 96820400 cifrado con llave simetrica al cliente. continuado.
+delegado 2: Terminando exitosamente.OK
