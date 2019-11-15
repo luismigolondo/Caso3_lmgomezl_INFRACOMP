@@ -66,11 +66,12 @@ public class P {
 		certSer = S.gc(keyPairServidor);
 		String rutaData = "./datos.txt";
 
-		fileData = new File(ruta);
+		fileData = new File(rutaData);
 		if (!file.exists()) {
 			file.createNewFile();
 		}
 		FileWriter fwer = new FileWriter(fileData);
+		fwer.write("Delegado;Tiempo;CPU Load;Estado Final \n");
 		fwer.close();
 		
 		D.init(certSer, keyPairServidor, file, fileData, seguro);

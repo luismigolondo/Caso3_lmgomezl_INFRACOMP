@@ -35,6 +35,7 @@ public class D implements Runnable {
 	// Atributos
 	private Socket sc = null;
 	private String dlg;
+	private int numDlg;
 	private byte[] mybyte;
 	private static File file;
 	private static File fileData;
@@ -52,6 +53,7 @@ public class D implements Runnable {
 
 	public D (Socket csP, int idP) {
 		sc = csP;
+		numDlg = idP;
 		dlg = new String("delegado " + idP + ": ");
 		try {
 			mybyte = new byte[520]; 
@@ -77,10 +79,10 @@ public class D implements Runnable {
 	 * - Debe conservar el metodo como está. 
 	 * - Es el único metodo permitido para escribir en el log.
 	 */
-	private void escribirMensaje(String pCadena) {
+	private void escribirMensaje(String pCadena, File pFile) {
 
 		try {
-			FileWriter fw = new FileWriter(file,true);
+			FileWriter fw = new FileWriter(pFile,true);
 			fw.write(pCadena + "\n");
 			fw.close();
 		} catch (Exception e) {
@@ -163,6 +165,8 @@ public class D implements Runnable {
 			cadenas[2] = dlg + "envio certificado del servidor. continuando.";
 			System.out.println(cadenas[2] + testCert);				
 
+			double inicT = System.currentTimeMillis();
+			
 			/***** Fase 4: *****/
 			cadenas[3] = "";
 			linea = dc.readLine();
@@ -204,20 +208,30 @@ public class D implements Runnable {
 			ac.println(strvalor.hashCode()+"");
 			System.out.println(dlg + "envio hash. " + strvalor.hashCode() + " continuado.");
 
+			double finT = System.currentTimeMillis();
+			
 			cadenas[7] = "";
 			linea = dc.readLine();	
+			String ok = ERROR;
 			if (linea.equals(OK)) {
 				cadenas[7] = dlg + "Terminando exitosamente." + linea;
 				System.out.println(cadenas[7]);
+				ok = OK;
 			} else {
 				cadenas[7] = dlg + "Terminando con error" + linea;
 				System.out.println(cadenas[7]);
 			}
+			double totalTiempo = finT - inicT;
+			String cadenaData = numDlg + ";" + totalTiempo + ";" + "" + ";" + ok;
 			sc.close();
-			synchronized(file) {
+			synchronized (file) {
 				for (int i=0;i<numCadenas;i++) {
-					escribirMensaje(cadenas[i]);
-				}		        	
+					escribirMensaje(cadenas[i], file);
+				}
+			}
+			synchronized (fileData) {
+				//escribir mensaje de tiempos y un solo cpuload
+				escribirMensaje(cadenaData, fileData);				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -287,6 +301,9 @@ public class D implements Runnable {
 			/***** Fase 4: *****/
 			cadenas[3] = "";
 			linea = dc.readLine();
+			
+			double inicT = System.currentTimeMillis();
+			
 			byte[] llaveSimetrica = S.ad(
 					toByteArray(linea), 
 					keyPairServidor.getPrivate(), algoritmos[2] );
@@ -341,24 +358,34 @@ public class D implements Runnable {
 			ac.println(toHexString(recibo));
 			System.out.println(dlg + "envio hmac cifrado con llave privada del servidor. continuado.");
 
+			double finT = System.currentTimeMillis();
+
 			cadenas[7] = "";
-			linea = dc.readLine();	
+			linea = dc.readLine();
+			String ok = ERROR;
 			if (linea.equals(OK)) {
 				cadenas[7] = dlg + "Terminando exitosamente." + linea;
 				System.out.println(cadenas[7]);
 				System.out.println();
+				ok = OK;
 			} else {
 				cadenas[7] = dlg + "Terminando con error" + linea;
 				System.out.println(cadenas[7]);
 				System.out.println();
 			}
+			double totalTiempo = finT - inicT;
+			String cadenaData = numDlg + ";" + totalTiempo + ";" + "" + ";" + ok;
 			sc.close();
 			synchronized (file) {
 				for (int i=0;i<numCadenas;i++) {
-					escribirMensaje(cadenas[i]);
+					escribirMensaje(cadenas[i], file);
 				}
-				//escribir mensaje de tiempos y un solo cpuload
 			}
+			synchronized (fileData) {
+				//escribir mensaje de tiempos y un solo cpuload
+				escribirMensaje(cadenaData, fileData);				
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
