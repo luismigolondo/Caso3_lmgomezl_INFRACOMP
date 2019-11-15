@@ -302,12 +302,15 @@ public class Cliente {
 		int puerto = p;
 
 		String cedula = cc;
+		System.out.println("Cedula: " + cedula);
 		String clave = c;
+		System.out.println("Clave: " + clave);
 
 		String algS = s;
-		String algA = a;
+		String algA = "RSA";
 		String algH = h;
-		
+
+
 		System.out.println("Conectandose con el servidor en el puerto: " + puerto);
 
 		Socket socket = new Socket("localhost", puerto);
@@ -323,24 +326,20 @@ public class Cliente {
 		System.out.println("Enviando algoritmos: " + algS + ":" + algA + ":" + algH);
 		out.println("ALGORITMOS:"+algS + ":" + algA + ":" + algH);
 
-		//Espero OK|ERROR y el CD
+		//Espero OK|ERROR
 		br.readLine();
+		//Recibo el CD
 		String resp2 = br.readLine();
 		System.out.println("SERVIDOR: " + resp2);
 		System.out.println();
 
-		//Recibo el CD
-		byte[] certificado = DatatypeConverter.parseBase64Binary(resp2);
-		//Sacamos el certificado
-		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-		InputStream in = new ByteArrayInputStream(certificado);
-		X509Certificate cert = (X509Certificate) certFactory.generateCertificate(in);
-
 		//Creamos simetrica
 		KeyGenerator keygen = KeyGenerator.getInstance(algS);
 		SecretKey simetrica = keygen.generateKey();
+		
+		byte[] sim = simetrica.getEncoded();
 		//Mando la simetrica
-		out.println(DatatypeConverter.printBase64Binary(simetrica.getEncoded()));
+		out.println(DatatypeConverter.printBase64Binary(sim));
 
 		//Mando un reto
 		String elReto = "LuisMiguelGomezL";
@@ -351,6 +350,8 @@ public class Cliente {
 		System.out.println(resp3);
 		System.out.println("SERVIDOR: " + resp2);
 		System.out.println();
+
+		//comparo
 		String resReto = "OK";
 		if (!elReto.equals(resp3))
 		{
@@ -361,38 +362,31 @@ public class Cliente {
 			socket.close();
 			return;
 		}
+		//OK | ERROR
 		out.println(resReto);
 		//Mandamos cc
-		byte[] ccC = cedula.getBytes();
+		out.println(cedula);
 
-		out.println(DatatypeConverter.printBase64Binary(ccC));
+		//mandamos clave
+		out.println(clave);
 
-		//mandamosclave
-		byte[] claveC = clave.getBytes();
-
-		out.println(DatatypeConverter.printBase64Binary(claveC));
-
-		//Recibimos valor normal
+		//Recibimos valor
 		String resp4 = br.readLine();
-		//covertido a bytes
-		byte[] cP = DatatypeConverter.parseBase64Binary(resp4);
+		System.out.println("Se recibe valor: " + resp4);
+		String recibidoH = resp4.hashCode() + "";
 
-		//Recibimos valor en hash
+		//Recibimos el valor hasheado
 		String resp5 = br.readLine();
-		//Simpelemente lo pasamos a bytes
-		byte[] hash = DatatypeConverter.parseBase64Binary(resp5);
-		String hashS = DatatypeConverter.printBase64Binary(hash);
+		System.out.println("Se recibe hash: " + resp5);
+		System.out.println("Calculado: " + recibidoH);
 
-		//Aca deberia hacerle hash a cP 
-		String hashCalculado = DatatypeConverter.printBase64Binary(cP);
-		
-		// aca compararlo con hash
+
 		String resHMAC = "OK";
-		if (!hashCalculado.equals(hashS))
+		if (!recibidoH.equals(resp5))
 		{
 			resHMAC = "ERROR";
 			out.println(resHMAC);
-			System.out.println("No coincidieron los HASH...");
+			System.out.println("No coincidieron los Hash...");
 			System.out.println();
 			socket.close();
 			return;

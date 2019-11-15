@@ -245,17 +245,21 @@ public class ClienteInseguro {
 
 		//Recibimos valor
 		String resp4 = br.readLine();
+		System.out.println("Se recibe valor: " + resp4);
 		String recibidoH = resp4.hashCode() + "";
 
 		//Recibimos el valor hasheado
 		String resp5 = br.readLine();
+		System.out.println("Se recibe hash: " + resp5);
+		System.out.println("Calculado: " + recibidoH);
+
 
 		String resHMAC = "OK";
 		if (!recibidoH.equals(resp5))
 		{
 			resHMAC = "ERROR";
 			out.println(resHMAC);
-			System.out.println("No coincidieron los HMACS...");
+			System.out.println("No coincidieron los Hash...");
 			System.out.println();
 			socket.close();
 			return;
