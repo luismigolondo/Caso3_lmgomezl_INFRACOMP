@@ -37,13 +37,17 @@ public class D implements Runnable {
 	private String dlg;
 	private byte[] mybyte;
 	private static File file;
+	private static File fileData;
 	private static X509Certificate certSer;
 	private static KeyPair keyPairServidor;
+	private static boolean seguro;
 
-	public static void init(X509Certificate pCertSer, KeyPair pKeyPairServidor, File pFile) {
+	public static void init(X509Certificate pCertSer, KeyPair pKeyPairServidor, File pFile, File pFileData, boolean pSeguro) {
+		seguro = pSeguro;
 		certSer = pCertSer;
 		keyPairServidor = pKeyPairServidor;
 		file = pFile;
+		fileData = pFileData;
 	}
 
 	public D (Socket csP, int idP) {
@@ -84,7 +88,7 @@ public class D implements Runnable {
 		}
 
 	}
-	
+
 	public double getSystemCpuLoad() throws Exception {
 		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		ObjectName name = ObjectName.getInstance("java.lang:type=OperatingSystem");
@@ -98,7 +102,129 @@ public class D implements Runnable {
 		return ((int)(value * 1000) / 10.0);
 	}
 
-	public void run() {
+	public void runInseguro()
+	{
+		String[] cadenas;
+		cadenas = new String[numCadenas];
+
+		String linea;
+		System.out.println(dlg + "Empezando atencion.");
+		try {
+
+			PrintWriter ac = new PrintWriter(sc.getOutputStream() , true);
+			BufferedReader dc = new BufferedReader(new InputStreamReader(sc.getInputStream()));
+
+			/***** Fase 1:  *****/
+			linea = dc.readLine();
+			cadenas[0] = "Fase1: ";
+			if (!linea.equals(HOLA)) {
+				ac.println(ERROR);
+				sc.close();
+				throw new Exception(dlg + ERROR + REC + linea +"-terminando.");
+			} else {
+				ac.println(OK);
+				cadenas[0] = dlg + REC + linea + "-continuando.";
+				System.out.println(cadenas[0]);
+			}
+
+			/***** Fase 2:  *****/
+			linea = dc.readLine();
+			cadenas[1] = "Fase2: ";
+			if (!(linea.contains(SEPARADOR) && linea.split(SEPARADOR)[0].equals(ALGORITMOS))) {
+				ac.println(ERROR);
+				sc.close();
+				throw new Exception(dlg + ERROR + REC + linea +"-terminando.");
+			}
+
+			String[] algoritmos = linea.split(SEPARADOR);
+			if (!algoritmos[1].equals(S.DES) && !algoritmos[1].equals(S.AES) &&
+					!algoritmos[1].equals(S.BLOWFISH) && !algoritmos[1].equals(S.RC4)){
+				ac.println(ERROR);
+				sc.close();
+				throw new Exception(dlg + ERROR + "Alg.Simetrico" + REC + algoritmos + "-terminando.");
+			}
+			if (!algoritmos[2].equals(S.RSA) ) {
+				ac.println(ERROR);
+				sc.close();
+				throw new Exception(dlg + ERROR + "Alg.Asimetrico." + REC + algoritmos + "-terminando.");
+			}
+			if (!validoAlgHMAC(algoritmos[3])) {
+				ac.println(ERROR);
+				sc.close();
+				throw new Exception(dlg + ERROR + "AlgHash." + REC + algoritmos + "-terminando.");
+			}
+			cadenas[1] = dlg + REC + linea + "-continuando.";
+			System.out.println(cadenas[1]);
+			ac.println(OK);
+
+			/***** Fase 3:  *****/
+			String testCert = toHexString(mybyte);
+			ac.println(testCert);
+			cadenas[2] = dlg + "envio certificado del servidor. continuando.";
+			System.out.println(cadenas[2] + testCert);				
+
+			/***** Fase 4: *****/
+			cadenas[3] = "";
+			linea = dc.readLine();
+			cadenas[3] = dlg + "recibio y creo llave simetrica. continuando.";
+			System.out.println(cadenas[3]);
+
+			/***** Fase 5:  *****/
+			cadenas[4]="";
+			linea = dc.readLine();
+			System.out.println(dlg + "Recibio reto del cliente:-" + linea + "-");
+			ac.println(linea);
+			System.out.println(dlg + "envio mismo reto. continuado.");
+
+			linea = dc.readLine();
+			if ((linea.equals(OK))) {
+				cadenas[4] = dlg + "recibio confirmacion del cliente:"+ linea +"-continuado.";
+				System.out.println(cadenas[4]);
+			} else {
+				sc.close();
+				throw new Exception(dlg + ERROR + "en confirmacion de llave simetrica." + REC + "-terminando.");
+			}
+
+			/***** Fase 6:  *****/
+			linea = dc.readLine();				
+			System.out.println(dlg + "recibio cc:-" + linea + "-continuado.");
+
+			linea = dc.readLine();				
+			System.out.println(dlg + "recibio clave:-" + linea + "-continuado.");
+			cadenas[5] = dlg + "recibio cc y clave - continuando";
+
+			Random rand = new Random(); 
+			int valor = rand.nextInt(1000000);
+			String strvalor = valor+"";
+			ac.println(strvalor);
+			cadenas[6] = dlg + "envio valor "+strvalor+" al cliente. continuado.";
+			System.out.println(cadenas[6]);
+
+			//hash nuevo sencillo del valor
+			ac.println(strvalor.hashCode()+"");
+			System.out.println(dlg + "envio hash. " + strvalor.hashCode() + " continuado.");
+
+			cadenas[7] = "";
+			linea = dc.readLine();	
+			if (linea.equals(OK)) {
+				cadenas[7] = dlg + "Terminando exitosamente." + linea;
+				System.out.println(cadenas[7]);
+			} else {
+				cadenas[7] = dlg + "Terminando con error" + linea;
+				System.out.println(cadenas[7]);
+			}
+			sc.close();
+			synchronized(file) {
+				for (int i=0;i<numCadenas;i++) {
+					escribirMensaje(cadenas[i]);
+				}		        	
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void runSeguro() {
 		String[] cadenas;
 		cadenas = new String[numCadenas];
 
@@ -236,6 +362,13 @@ public class D implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void run() {
+		if(seguro)
+			runSeguro();
+		else
+			runInseguro();
 	}
 
 	public static String toHexString(byte[] array) {

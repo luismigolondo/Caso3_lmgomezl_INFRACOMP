@@ -47,7 +47,7 @@ public class P {
 		// Adiciona la libreria como un proveedor de seguridad.
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());		
 
-		// Crea el archivo de log
+		// Crea el archivo de log de transacciones
 		File file = null;
 		keyPairServidor = S.grsa();
 		certSer = S.gc(keyPairServidor);
@@ -60,10 +60,21 @@ public class P {
 		FileWriter fw = new FileWriter(file);
 		fw.close();
 
-		if(seguro)
-			D.init(certSer, keyPairServidor, file);
-		else
-			DInseguro.init(certSer, keyPairServidor, file);
+		// Crea el archivo de log de datos .csv
+		File fileData = null;
+		keyPairServidor = S.grsa();
+		certSer = S.gc(keyPairServidor);
+		String rutaData = "./datos.txt";
+
+		fileData = new File(ruta);
+		if (!file.exists()) {
+			file.createNewFile();
+		}
+		FileWriter fwer = new FileWriter(fileData);
+		fwer.close();
+		
+		D.init(certSer, keyPairServidor, file, fileData, seguro);
+
 
 		// Crea el socket que escucha en el puerto seleccionado.
 		ss = new ServerSocket(ip);
@@ -76,7 +87,7 @@ public class P {
 			try { 
 				Socket sc = ss.accept();
 				System.out.println(MAESTRO + "Cliente " + i + " aceptado.");
-				Runnable d = seguro ? new D(sc,i) : new DInseguro(sc, i);
+				Runnable d = new D(sc,i);
 				executor.execute(d);
 			} catch (IOException e) {
 				System.out.println(MAESTRO + "Error creando el socket cliente.");
