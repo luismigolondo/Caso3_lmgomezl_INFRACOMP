@@ -2,7 +2,13 @@ package src.loader;
 
 import uniandes.gload.core.Task;
 
+import java.lang.management.ManagementFactory;
 import java.util.Scanner;
+
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import uniandes.gload.core.LoadGenerator;
 
@@ -10,10 +16,10 @@ public class Generator
 {
 	private LoadGenerator generator;
 
-	public Generator(boolean seg, int numeroDeClientes, int puerto, String cedula, String clave, String algS, String algA, String algH) {
+	public Generator(int seconds, boolean seg, int numeroDeClientes, int puerto, String cedula, String clave, String algS, String algA, String algH) {
 		final Task work = this.createTask(seg, puerto, cedula, clave, algS, algA, algH);
 		final int numberOfTasks = numeroDeClientes;
-		final int gapBetweenTasks = 1000;
+		final int gapBetweenTasks = seconds;
 		(this.generator = new LoadGenerator("Client - Server Load Test", numberOfTasks, work, gapBetweenTasks)).generate();
 	}
 
@@ -79,12 +85,25 @@ public class Generator
 
 	}
 	
+	public double getSystemCpuLoad() throws Exception {
+		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+		ObjectName name = ObjectName.getInstance("java.lang:type=OperatingSystem");
+		AttributeList list = mbs.getAttributes(name, new String[]{ "SystemCpuLoad" });
+		if (list.isEmpty()) return Double.NaN;
+		Attribute att = (Attribute)list.get(0);
+		Double value = (Double)att.getValue();
+		// usually takes a couple of seconds before we get real values
+		if (value == -1.0) return Double.NaN;
+		// returns a percentage value with 1 decimal point precision
+		return ((int)(value * 1000) / 10.0);
+	}
+	
 	public static void main(final String... args) {
 		System.out.println("GENERADOR DE CLIENTES CASO 3 - INFRACOMP / LUIS MIGUEL GOMEZ LONDONO 201729597");		
 
 		Scanner sc = new Scanner(System.in);
 		
-		System.out.println("¿Desea usar un cliente seguro? (Debe ser el mismo del servidor que inicializo): ");
+		System.out.println("ï¿½Desea usar un cliente seguro? (Debe ser el mismo del servidor que inicializo): ");
 		System.out.println("1. SI ");
 		System.out.println("2. NO ");
 		int sec = Integer.parseInt(sc.nextLine());
@@ -96,6 +115,11 @@ public class Generator
 		System.out.println("Ingrese el numero de clientes que desea crear: ");
 		int num = Integer.parseInt(sc.nextLine());
 		
+		System.out.println("Ingrese los SEGUNDOS entre tareas (ej. 1...): ");
+		double s = Double.parseDouble(sc.nextLine());
+		s *= 1000;
+		int segundos = (int) s; 
+		
 		String cedula = dato(sc, "cedula");
 		System.out.println("Cedula: " + cedula);
 		String clave = dato(sc, "clave");
@@ -104,6 +128,6 @@ public class Generator
 		String algS = algSimetrico(sc);
 		String algA = "RSA";
 		String algH = algHMAC(sc);
-		final Generator gen = new Generator(seguro, num, puerto, cedula, clave, algS, algA, algH);
+		final Generator gen = new Generator(segundos, seguro, num, puerto, cedula, clave, algS, algA, algH);
 	}
 }
