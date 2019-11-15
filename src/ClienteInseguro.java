@@ -199,47 +199,34 @@ public class ClienteInseguro {
 		System.out.println("Enviando algoritmos: " + algS + ":" + algA + ":" + algH);
 		out.println("ALGORITMOS:"+algS + ":" + algA + ":" + algH);
 
-		//Espero OK|ERROR y el CD
+		//Espero OK|ERROR
 		br.readLine();
+		//Recibo el CD
 		String resp2 = br.readLine();
 		System.out.println("SERVIDOR: " + resp2);
 		System.out.println();
 
-		//Recibo el CD
-		byte[] certificado = DatatypeConverter.parseBase64Binary(resp2);
-		//Sacamos el certificado
-		CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
-		InputStream in = new ByteArrayInputStream(certificado);
-		X509Certificate cert = (X509Certificate) certFactory.generateCertificate(in);
-
-		//Al certificado le sacamos la llave publica
-		PublicKey publica = cert.getPublicKey();
-
-		//Ciframos con la llave publica la llave simetrica...
 		//Creamos simetrica
 		KeyGenerator keygen = KeyGenerator.getInstance(algS);
 		SecretKey simetrica = keygen.generateKey();
-		//Ciframos
-		byte[] simetricaCifrada = cifrarA(publica, algA, simetrica.getEncoded());
-		//Mando la simetrica cifrada con la publica
-		out.println(DatatypeConverter.printBase64Binary(simetricaCifrada));
+		
+		byte[] s = simetrica.getEncoded();
+		//Mando la simetrica
+		out.println(DatatypeConverter.printBase64Binary(s));
 
 		//Mando un reto
 		String elReto = "LuisMiguelGomezL";
 		out.println(elReto);
 
-		//Recibo el supuesto reto cifrado con la supuesta simetrica
+		//Recibo el mismo reto
 		String resp3 = br.readLine();
 		System.out.println(resp3);
 		System.out.println("SERVIDOR: " + resp2);
 		System.out.println();
 
-		//descifro y comparo
-		byte[] desS = descifrarS(simetrica, DatatypeConverter.parseBase64Binary(resp3));
-		String resp3S = DatatypeConverter.printBase64Binary(desS);
-
+		//comparo
 		String resReto = "OK";
-		if (!elReto.equals(resp3S))
+		if (!elReto.equals(resp3))
 		{
 			resReto = "ERROR";
 			out.println(resReto);
@@ -248,38 +235,23 @@ public class ClienteInseguro {
 			socket.close();
 			return;
 		}
+		//OK | ERROR
 		out.println(resReto);
 		//Mandamos cc
-		byte[] ccC = cifrarS(simetrica, cedula);
+		out.println(cedula);
 
-		out.println(DatatypeConverter.printBase64Binary(ccC));
+		//mandamos clave
+		out.println(clave);
 
-		//mandamosclave
-		byte[] claveC = cifrarS(simetrica, clave);
-
-		out.println(DatatypeConverter.printBase64Binary(claveC));
-
-		//Recibimos mensaje cifrado
+		//Recibimos valor
 		String resp4 = br.readLine();
-		//covertido a bytes
-		byte[] cP = DatatypeConverter.parseBase64Binary(resp4);
-		//Descifro con la simetrica
-		byte[] valorDS = descifrarS(simetrica, cP);
+		String recibidoH = resp4.hashCode() + "";
 
-		//Recibimos cifrado- del HMAC(M)
+		//Recibimos el valor hasheado
 		String resp5 = br.readLine();
-		//HMAC KS (Asumiendo que nos mandan el hmac cifrado con el KS)
-		byte[] hmacC = descifrarA(publica, algA, DatatypeConverter.parseBase64Binary(resp5));
-		String hmacRecibidoS = DatatypeConverter.printBase64Binary(hmacC);
-
-		//Hacemos HMAC con valor de valorDS
-		Mac mac = Mac.getInstance(algH);
-		mac.init(simetrica);
-		byte[] hmacCalculado = mac.doFinal(valorDS);
-		String hmacCalculadoS = DatatypeConverter.printBase64Binary(hmacCalculado);
 
 		String resHMAC = "OK";
-		if (!hmacCalculadoS.equals(hmacRecibidoS))
+		if (!recibidoH.equals(resp5))
 		{
 			resHMAC = "ERROR";
 			out.println(resHMAC);

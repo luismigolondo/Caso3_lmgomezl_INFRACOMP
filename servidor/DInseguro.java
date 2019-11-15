@@ -148,10 +148,6 @@ public class DInseguro implements Runnable {
 				/***** Fase 4: *****/
 				cadenas[3] = "";
 				linea = dc.readLine();
-				byte[] llaveSimetrica = S.ad(
-						toByteArray(linea), 
-						keyPairServidor.getPrivate(), algoritmos[2] );
-				SecretKey simetrica = new SecretKeySpec(llaveSimetrica, 0, llaveSimetrica.length, algoritmos[1]);
 				cadenas[3] = dlg + "recibio y creo llave simetrica. continuando.";
 				System.out.println(cadenas[3]);
 				
@@ -188,8 +184,7 @@ public class DInseguro implements Runnable {
 				System.out.println(cadenas[6]);
 		        
 				//hash nuevo sencillo del valor
-				byte [] hash = toByteArray(strvalor);
-				ac.println(toHexString(hash));
+				ac.println(strvalor.hashCode());
 				System.out.println(dlg + "envio hash. continuado.");
 				
 				cadenas[7] = "";
