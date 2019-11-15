@@ -12,11 +12,11 @@ import javax.management.ObjectName;
 
 import uniandes.gload.core.LoadGenerator;
 
-public class Generator
+public class ClientesGenerator
 {
 	private LoadGenerator generator;
 
-	public Generator(int seconds, boolean seg, int numeroDeClientes, int puerto, String cedula, String clave, String algS, String algA, String algH) {
+	public ClientesGenerator(int seconds, boolean seg, int numeroDeClientes, int puerto, String cedula, String clave, String algS, String algA, String algH) {
 		final Task work = this.createTask(seg, puerto, cedula, clave, algS, algA, algH);
 		final int numberOfTasks = numeroDeClientes;
 		final int gapBetweenTasks = seconds;
@@ -128,6 +128,6 @@ public class Generator
 		String algS = algSimetrico(sc);
 		String algA = "RSA";
 		String algH = algHMAC(sc);
-		final Generator gen = new Generator(segundos, seguro, num, puerto, cedula, clave, algS, algA, algH);
+		final ClientesGenerator gen = new ClientesGenerator(segundos, seguro, num, puerto, cedula, clave, algS, algA, algH);
 	}
 }
