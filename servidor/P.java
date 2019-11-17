@@ -42,6 +42,9 @@ public class P {
 
 		System.out.println("Ingrese el tamaño del pool de threads de servidores: ");
 		int tam = Integer.parseInt(br.readLine());
+		
+		System.out.println("Ingrese el numero de escenario de pruebas (1-6): ");
+		int esc = Integer.parseInt(br.readLine());
 
 		System.out.println(MAESTRO + "Empezando servidor maestro en puerto " + ip);
 		// Adiciona la libreria como un proveedor de seguridad.
@@ -51,7 +54,7 @@ public class P {
 		File file = null;
 		keyPairServidor = S.grsa();
 		certSer = S.gc(keyPairServidor);
-		String ruta = "./resultados.txt";
+		String ruta = "./data/resultados/escenario" + esc + "-resultados.txt";
 
 		file = new File(ruta);
 		if (!file.exists()) {
@@ -64,14 +67,14 @@ public class P {
 		File fileData = null;
 		keyPairServidor = S.grsa();
 		certSer = S.gc(keyPairServidor);
-		String rutaData = "./datos.txt";
+		String rutaData = "./data/datos/escenario" + esc + "-datos.csv";
 
 		fileData = new File(rutaData);
 		if (!file.exists()) {
 			file.createNewFile();
 		}
 		FileWriter fwer = new FileWriter(fileData);
-		fwer.write("Delegado;Tiempo;CPU Load;Estado Final \n");
+		fwer.write("Delegado;Tiempo;CPU Load Inicial;CPU Load Mitad;CPU Load Final;Estado Final \n");
 		fwer.close();
 		
 		D.init(certSer, keyPairServidor, file, fileData, seguro);

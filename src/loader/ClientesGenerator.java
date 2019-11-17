@@ -115,10 +115,9 @@ public class ClientesGenerator
 		System.out.println("Ingrese el numero de clientes que desea crear: ");
 		int num = Integer.parseInt(sc.nextLine());
 		
-		System.out.println("Ingrese los SEGUNDOS entre tareas (ej. 1...): ");
-		double s = Double.parseDouble(sc.nextLine());
-		s *= 1000;
-		int segundos = (int) s; 
+		System.out.println("Ingrese los milisegundos entre tareas (ej. 1...): ");
+		double milisecs = Double.parseDouble(sc.nextLine());
+		int milisegundos = (int) milisecs; 
 		
 		String cedula = dato(sc, "cedula");
 		System.out.println("Cedula: " + cedula);
@@ -128,6 +127,6 @@ public class ClientesGenerator
 		String algS = algSimetrico(sc);
 		String algA = "RSA";
 		String algH = algHMAC(sc);
-		final ClientesGenerator gen = new ClientesGenerator(segundos, seguro, num, puerto, cedula, clave, algS, algA, algH);
+		final ClientesGenerator gen = new ClientesGenerator(milisegundos, seguro, num, puerto, cedula, clave, algS, algA, algH);
 	}
 }

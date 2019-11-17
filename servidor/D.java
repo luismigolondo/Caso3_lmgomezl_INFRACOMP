@@ -108,11 +108,14 @@ public class D implements Runnable {
 	{
 		String[] cadenas;
 		cadenas = new String[numCadenas];
-
+		
 		String linea;
 		System.out.println(dlg + "Empezando atencion.");
 		try {
 
+			double cpu = getSystemCpuLoad();
+			String inicCpu = (cpu >= 0) ? cpu + "": "";
+			
 			PrintWriter ac = new PrintWriter(sc.getOutputStream() , true);
 			BufferedReader dc = new BufferedReader(new InputStreamReader(sc.getInputStream()));
 
@@ -166,6 +169,9 @@ public class D implements Runnable {
 			System.out.println(cadenas[2] + testCert);				
 
 			double inicT = System.currentTimeMillis();
+			
+			cpu = getSystemCpuLoad();
+			String midCpu = (cpu >= 0) ? cpu + "": "";
 			
 			/***** Fase 4: *****/
 			cadenas[3] = "";
@@ -221,8 +227,13 @@ public class D implements Runnable {
 				cadenas[7] = dlg + "Terminando con error" + linea;
 				System.out.println(cadenas[7]);
 			}
+			
 			double totalTiempo = finT - inicT;
-			String cadenaData = numDlg + ";" + totalTiempo + ";" + "" + ";" + ok;
+			
+			cpu = getSystemCpuLoad();
+			String finCpu = (cpu >= 0) ? cpu + "": "";
+			
+			String cadenaData = numDlg + ";" + totalTiempo + ";" + inicCpu + ";" + midCpu + ";" + finCpu + ";" + ok;
 			sc.close();
 			synchronized (file) {
 				for (int i=0;i<numCadenas;i++) {
@@ -249,6 +260,9 @@ public class D implements Runnable {
 			PrintWriter ac = new PrintWriter(sc.getOutputStream() , true);
 			BufferedReader dc = new BufferedReader(new InputStreamReader(sc.getInputStream()));
 
+			double cpu = getSystemCpuLoad();
+			String inicCpu = (cpu >= 0) ? cpu + "": "";
+			
 			/***** Fase 1:  *****/
 			linea = dc.readLine();
 			cadenas[0] = "Fase1: ";
@@ -303,6 +317,9 @@ public class D implements Runnable {
 			linea = dc.readLine();
 			
 			double inicT = System.currentTimeMillis();
+			
+			cpu = getSystemCpuLoad();
+			String midCpu = (cpu >= 0) ? cpu + "": "";
 			
 			byte[] llaveSimetrica = S.ad(
 					toByteArray(linea), 
@@ -373,8 +390,13 @@ public class D implements Runnable {
 				System.out.println(cadenas[7]);
 				System.out.println();
 			}
+			
+			cpu = getSystemCpuLoad();
+			String finCpu = (cpu >= 0) ? cpu + "": "";
+			
 			double totalTiempo = finT - inicT;
-			String cadenaData = numDlg + ";" + totalTiempo + ";" + "" + ";" + ok;
+			
+			String cadenaData = numDlg + ";" + totalTiempo + ";" + inicCpu + ";" + midCpu + ";" + finCpu + ";" + ok;
 			sc.close();
 			synchronized (file) {
 				for (int i=0;i<numCadenas;i++) {
