@@ -36,6 +36,7 @@ public class P {
 		System.out.println("2. INSEGURO ");
 		int sec = Integer.parseInt(br.readLine());
 		boolean seguro = (sec == 1) ? true : false;
+		String punto = seguro ? "P3" : "P4";
 
 		System.out.println(MAESTRO + "Establezca puerto de conexion:");
 		int ip = Integer.parseInt(br.readLine());
@@ -43,8 +44,11 @@ public class P {
 		System.out.println("Ingrese el tamaño del pool de threads de servidores: ");
 		int tam = Integer.parseInt(br.readLine());
 		
-		System.out.println("Ingrese el numero de escenario de pruebas (1-6): ");
+		System.out.println("Ingrese el numero de escenario de pruebas: ");
 		int esc = Integer.parseInt(br.readLine());
+		
+		System.out.println("Ingrese el numero de repeticion escenario (1-10): ");
+		int intento = Integer.parseInt(br.readLine());
 
 		System.out.println(MAESTRO + "Empezando servidor maestro en puerto " + ip);
 		// Adiciona la libreria como un proveedor de seguridad.
@@ -54,7 +58,7 @@ public class P {
 		File file = null;
 		keyPairServidor = S.grsa();
 		certSer = S.gc(keyPairServidor);
-		String ruta = "./data/resultados/escenario" + esc + "-resultados.txt";
+		String ruta = "./data/resultados/" + punto + "/Escenario" + esc + "R" + intento + "-resultados.txt";
 
 		file = new File(ruta);
 		if (!file.exists()) {
@@ -67,7 +71,7 @@ public class P {
 		File fileData = null;
 		keyPairServidor = S.grsa();
 		certSer = S.gc(keyPairServidor);
-		String rutaData = "./data/datos/escenario" + esc + "-datos.csv";
+		String rutaData = "./data/datos/" + punto + "/Escenario" + esc + "R" + intento + "-datos.csv";
 
 		fileData = new File(rutaData);
 		if (!file.exists()) {
