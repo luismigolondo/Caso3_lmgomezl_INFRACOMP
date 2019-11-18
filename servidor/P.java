@@ -58,7 +58,7 @@ public class P {
 		File file = null;
 		keyPairServidor = S.grsa();
 		certSer = S.gc(keyPairServidor);
-		String ruta = "./data/resultados/" + punto + "/Escenario" + esc + "R" + intento + "-resultados.txt";
+		String ruta = "./data/logs/" + punto + "/Escenario" + esc + "R" + intento + "-resultados.txt";
 
 		file = new File(ruta);
 		if (!file.exists()) {
@@ -71,7 +71,7 @@ public class P {
 		File fileData = null;
 		keyPairServidor = S.grsa();
 		certSer = S.gc(keyPairServidor);
-		String rutaData = "./data/datos/" + punto + "/Escenario" + esc + "R" + intento + "-datos.csv";
+		String rutaData = "./data/datos/" + punto + "/Escenario " + esc + "/Escenario" + esc + "R" + intento + "-datos.csv";
 
 		fileData = new File(rutaData);
 		if (!file.exists()) {
