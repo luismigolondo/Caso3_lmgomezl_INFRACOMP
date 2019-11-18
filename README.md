@@ -1,9 +1,9 @@
 # Caso3_lmgomezl_INFRACOMP
-###Luis Miguel Gómez Londoño – 201729597
-###Infraestructura Computacional
-###Universidad de los Andes
-###2019-20
-###Profesora: Sandra Rueda
+### Luis Miguel Gómez Londoño – 201729597
+### Infraestructura Computacional
+### Universidad de los Andes
+### 2019-20
+### Profesora: Sandra Rueda
 
 ## Uso:
 ### Para le ejecucion de los servidores utilizar: **_P.java dentro_** del paquete **_servidor_**.
